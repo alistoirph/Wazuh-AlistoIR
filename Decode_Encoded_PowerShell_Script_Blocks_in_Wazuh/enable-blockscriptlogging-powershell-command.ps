@@ -1,0 +1,27 @@
+function Enable-PSLogging {
+    $basePath = 'HKLM:\Software\Policies\Microsoft\Windows\PowerShell'
+    $scriptBlockPath = Join-Path $basePath 'ScriptBlockLogging'
+    $moduleLoggingPath = Join-Path $basePath 'ModuleLogging'
+    $moduleNamesPath = Join-Path $moduleLoggingPath 'ModuleNames'
+
+    # Create keys
+    $null = New-Item -Path $scriptBlockPath -Force
+    $null = New-Item -Path $moduleLoggingPath -Force
+    $null = New-Item -Path $moduleNamesPath -Force
+
+    # Enable Script Block Logging
+    New-ItemProperty -Path $scriptBlockPath -Name EnableScriptBlockLogging -PropertyType DWord -Value 1 -Force | Out-Null
+
+    # Optional: also log script block invocation start/stop
+    # New-ItemProperty -Path $scriptBlockPath -Name EnableScriptBlockInvocationLogging -PropertyType DWord -Value 1 -Force | Out-Null
+
+    # Enable Module Logging
+    New-ItemProperty -Path $moduleLoggingPath -Name EnableModuleLogging -PropertyType DWord -Value 1 -Force | Out-Null
+
+    # Log all modules
+    New-ItemProperty -Path $moduleNamesPath -Name '*' -PropertyType String -Value '*' -Force | Out-Null
+
+    Write-Output "PowerShell Script Block Logging and Module Logging have been enabled."
+}
+
+Enable-PSLogging
