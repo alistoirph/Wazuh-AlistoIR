@@ -7,7 +7,7 @@
 
   <rule id="110541" level="5">
     <if_sid>110540</if_sid>
-    <field name="win.eventdata.image" type="pcre2">(?i)\\(powershell|pwsh)\.exe$</field>
+    <field name="win.eventdata.description" type="pcre2">(?i)PowerShell</field>
     <field name="win.eventdata.commandLine" type="pcre2">(?i)Get-Clipboard|Set-Clipboard|System\.Windows\.Forms\.Clipboard|Windows\.Clipboard</field>
     <description>Clipboard access via PowerShell detected - visibility event</description>
     <mitre>
@@ -101,7 +101,7 @@
   </rule>
 
   <rule id="110547" level="12">
-    <if_group>sysmon_event11</if_group>
+    <if_group>sysmon_event_11</if_group>
     <field name="win.eventdata.targetFilename" type="pcre2">(?i)\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\.*\.(exe|bat|cmd|vbs|js|ps1|lnk)$</field>
     <field name="win.eventdata.targetFilename" type="pcre2">(?i)clipboard|clipper|wallet|crypto|update|updater|service|runtime|host|security</field>
     <description>Possible crypto clipper supporting behavior - suspicious Startup folder persistence</description>
@@ -112,7 +112,7 @@
   </rule>
 
   <rule id="110548" level="12">
-    <if_group>sysmon_event13</if_group>
+    <if_group>sysmon_event_13</if_group>
     <field name="win.eventdata.targetObject" type="pcre2">(?i)\\Software\\Microsoft\\Windows\\CurrentVersion\\Run|\\Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce</field>
     <field name="win.eventdata.details" type="pcre2">(?i)\\AppData\\|\\Temp\\|\\ProgramData\\|\\Downloads\\|clipboard|clipper|wallet|crypto|update|updater|runtime|service</field>
     <description>Possible crypto clipper supporting behavior - suspicious Registry Run or RunOnce persistence</description>
@@ -123,7 +123,9 @@
   </rule>
 
   <rule id="110549" level="14">
-    <if_sid>110541</if_sid>
+    <if_sid>110540</if_sid>
+    <field name="win.eventdata.description" type="pcre2">(?i)PowerShell</field>
+    <field name="win.eventdata.commandLine" type="pcre2">(?i)Get-Clipboard|Set-Clipboard|System\.Windows\.Forms\.Clipboard|Windows\.Clipboard</field>
     <field name="win.eventdata.commandLine" type="pcre2">(?i)\b(bc1|[13])[a-zA-HJ-NP-Z0-9]{25,59}\b|\b0x[a-fA-F0-9]{40}\b|bitcoin|btc|ethereum|eth|monero|xmr|usdt|wallet|crypto</field>
     <description>High confidence possible crypto clipper behavior - clipboard access with cryptocurrency indicator</description>
     <mitre>
