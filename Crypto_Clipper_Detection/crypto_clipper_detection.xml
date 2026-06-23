@@ -1,0 +1,167 @@
+<group name="windows,sysmon,crypto_clipper,suspicious_clipboard_activity,">
+
+  <rule id="110540" level="0">
+    <if_group>sysmon_event1</if_group>
+    <description>Sysmon process creation base rule for possible crypto clipper detection</description>
+  </rule>
+
+  <rule id="110541" level="5">
+    <if_sid>110540</if_sid>
+    <field name="win.eventdata.image" type="pcre2">(?i)\\(powershell|pwsh)\.exe$</field>
+    <field name="win.eventdata.commandLine" type="pcre2">(?i)Get-Clipboard|Set-Clipboard|System\.Windows\.Forms\.Clipboard|Windows\.Clipboard</field>
+    <description>Clipboard access via PowerShell detected - visibility event</description>
+    <mitre>
+      <id>T1115</id>
+      <id>T1059.001</id>
+    </mitre>
+  </rule>
+
+  <rule id="110542" level="5">
+    <if_sid>110540</if_sid>
+    <field name="win.eventdata.image" type="pcre2">(?i)\\clip\.exe$</field>
+    <description>clip.exe execution detected - visibility event</description>
+    <mitre>
+      <id>T1115</id>
+    </mitre>
+  </rule>
+
+  <rule id="110550" level="7">
+    <if_sid>110540</if_sid>
+    <field name="win.eventdata.commandLine" type="pcre2">(?i)\.lnk</field>
+    <field name="win.eventdata.commandLine" type="pcre2">(?i)powershell|cmd|wscript|cscript|mshta|rundll32|regsvr32</field>
+    <field name="win.eventdata.commandLine" type="pcre2">(?i)\\Users\\.*\\AppData\\|\\Temp\\|\\Downloads\\|\\Desktop\\|\\ProgramData\\</field>
+    <description>Suspicious LNK execution launching script or LOLBin from user-writable path</description>
+    <mitre>
+      <id>T1204.002</id>
+      <id>T1059</id>
+    </mitre>
+  </rule>
+
+  <rule id="110551" level="10">
+    <if_sid>110540</if_sid>
+    <field name="win.eventdata.image" type="pcre2">(?i)\\(tor|obfs4proxy)\.exe$</field>
+    <field name="win.eventdata.image" type="pcre2">(?i)\\Users\\.*\\AppData\\|\\Temp\\|\\ProgramData\\|\\Downloads\\</field>
+    <description>Possible malware C2 behavior - Tor-related process from suspicious path</description>
+    <mitre>
+      <id>T1090</id>
+      <id>T1105</id>
+    </mitre>
+  </rule>
+
+  <rule id="110552" level="10">
+    <if_sid>110540</if_sid>
+    <field name="win.eventdata.commandLine" type="pcre2">(?i)\.onion\b|tor2web|socks5|127\.0\.0\.1:9050|127\.0\.0\.1:9150</field>
+    <description>Possible malware C2 behavior - Tor or onion routing indicator in command line</description>
+    <mitre>
+      <id>T1090</id>
+      <id>T1102</id>
+    </mitre>
+  </rule>
+
+  <rule id="110553" level="12">
+    <if_sid>110540</if_sid>
+    <field name="win.eventdata.image" type="pcre2">(?i)\\schtasks\.exe$</field>
+    <field name="win.eventdata.commandLine" type="pcre2">(?i)/create|/change</field>
+    <field name="win.eventdata.commandLine" type="pcre2">(?i)\\AppData\\|\\Temp\\|\\ProgramData\\|\\Downloads\\</field>
+    <field name="win.eventdata.commandLine" type="pcre2">(?i)update|updater|runtime|service|system|security|windows|host|clipboard|clipper|wallet|crypto</field>
+    <description>Possible crypto clipper supporting behavior - suspicious scheduled task creation</description>
+    <mitre>
+      <id>T1053.005</id>
+      <id>T1115</id>
+    </mitre>
+  </rule>
+
+  <rule id="110554" level="9">
+    <if_sid>110540</if_sid>
+    <field name="win.eventdata.image" type="pcre2">(?i)\\Users\\.*\\AppData\\|\\Temp\\|\\ProgramData\\|\\Downloads\\</field>
+    <field name="win.eventdata.image" type="pcre2">(?i)\\(update|updater|runtime|service|system|security|host|svchost|chrome|onedrive|teams|discord)\.exe$</field>
+    <description>Suspicious masqueraded executable running from user-writable directory</description>
+    <mitre>
+      <id>T1036</id>
+      <id>T1204.002</id>
+    </mitre>
+  </rule>
+
+  <rule id="110545" level="10">
+    <if_sid>110540</if_sid>
+    <field name="win.eventdata.commandLine" type="pcre2">(?i)\b(bc1|[13])[a-zA-HJ-NP-Z0-9]{25,59}\b</field>
+    <description>Cryptocurrency wallet indicator detected in process command line - possible crypto clipper behavior</description>
+    <mitre>
+      <id>T1115</id>
+    </mitre>
+  </rule>
+
+  <rule id="110546" level="10">
+    <if_sid>110540</if_sid>
+    <field name="win.eventdata.commandLine" type="pcre2">(?i)\b0x[a-fA-F0-9]{40}\b</field>
+    <description>Ethereum wallet indicator detected in process command line - possible crypto clipper behavior</description>
+    <mitre>
+      <id>T1115</id>
+    </mitre>
+  </rule>
+
+  <rule id="110547" level="12">
+    <if_group>sysmon_event11</if_group>
+    <field name="win.eventdata.targetFilename" type="pcre2">(?i)\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\.*\.(exe|bat|cmd|vbs|js|ps1|lnk)$</field>
+    <field name="win.eventdata.targetFilename" type="pcre2">(?i)clipboard|clipper|wallet|crypto|update|updater|service|runtime|host|security</field>
+    <description>Possible crypto clipper supporting behavior - suspicious Startup folder persistence</description>
+    <mitre>
+      <id>T1547.001</id>
+      <id>T1115</id>
+    </mitre>
+  </rule>
+
+  <rule id="110548" level="12">
+    <if_group>sysmon_event13</if_group>
+    <field name="win.eventdata.targetObject" type="pcre2">(?i)\\Software\\Microsoft\\Windows\\CurrentVersion\\Run|\\Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce</field>
+    <field name="win.eventdata.details" type="pcre2">(?i)\\AppData\\|\\Temp\\|\\ProgramData\\|\\Downloads\\|clipboard|clipper|wallet|crypto|update|updater|runtime|service</field>
+    <description>Possible crypto clipper supporting behavior - suspicious Registry Run or RunOnce persistence</description>
+    <mitre>
+      <id>T1547.001</id>
+      <id>T1115</id>
+    </mitre>
+  </rule>
+
+  <rule id="110549" level="14">
+    <if_sid>110541</if_sid>
+    <field name="win.eventdata.commandLine" type="pcre2">(?i)\b(bc1|[13])[a-zA-HJ-NP-Z0-9]{25,59}\b|\b0x[a-fA-F0-9]{40}\b|bitcoin|btc|ethereum|eth|monero|xmr|usdt|wallet|crypto</field>
+    <description>High confidence possible crypto clipper behavior - clipboard access with cryptocurrency indicator</description>
+    <mitre>
+      <id>T1115</id>
+      <id>T1059.001</id>
+    </mitre>
+  </rule>
+
+  <rule id="110556" level="14">
+    <if_sid>110540</if_sid>
+    <field name="win.eventdata.image" type="pcre2">(?i)\\Users\\.*\\AppData\\|\\Temp\\|\\ProgramData\\|\\Downloads\\</field>
+    <field name="win.eventdata.commandLine" type="pcre2">(?i)\b(bc1|[13])[a-zA-HJ-NP-Z0-9]{25,59}\b|\b0x[a-fA-F0-9]{40}\b</field>
+    <description>High confidence possible crypto clipper behavior - suspicious executable path with cryptocurrency wallet indicator</description>
+    <mitre>
+      <id>T1115</id>
+      <id>T1036</id>
+    </mitre>
+  </rule>
+
+  <rule id="110557" level="13">
+    <if_sid>110540</if_sid>
+    <field name="win.eventdata.image" type="pcre2">(?i)\\Users\\.*\\AppData\\|\\Temp\\|\\ProgramData\\|\\Downloads\\</field>
+    <field name="win.eventdata.commandLine" type="pcre2">(?i)Get-Clipboard|Set-Clipboard|System\.Windows\.Forms\.Clipboard|Windows\.Clipboard|clip\.exe|clipboard|clipper</field>
+    <description>High confidence possible clipboard abuse - clipboard activity from suspicious execution path</description>
+    <mitre>
+      <id>T1115</id>
+      <id>T1204.002</id>
+    </mitre>
+  </rule>
+
+  <rule id="110555" level="10" frequency="3" timeframe="300">
+    <if_matched_sid>110541</if_matched_sid>
+    <same_field>win.system.computer</same_field>
+    <description>Repeated PowerShell clipboard access within 5 minutes from same host</description>
+    <mitre>
+      <id>T1115</id>
+      <id>T1059.001</id>
+    </mitre>
+  </rule>
+
+</group>
