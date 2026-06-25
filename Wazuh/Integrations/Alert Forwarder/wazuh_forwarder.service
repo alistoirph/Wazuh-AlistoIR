@@ -1,0 +1,17 @@
+[Unit]
+Description=AlistoIR Wazuh Forwarder
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+EnvironmentFile=/var/ossec/integrations/wazuh_forwarder.env
+ExecStart=/usr/bin/python3 /var/ossec/integrations/wazuh_forwarder_standalone.py
+Restart=always
+RestartSec=5
+WorkingDirectory=/var/ossec/integrations
+
+[Install]
+WantedBy=multi-user.target
