@@ -37,9 +37,9 @@ def env_csv(name: str) -> set[str]:
     return {item.strip() for item in value.split(",") if item.strip()}
 
 
-SOAR_URL = os.getenv("TRACKIR_SOAR_URL", "https://<DOMAIN_OR_IP>/alerts/ingest.php").strip()
+SOAR_URL = os.getenv("TRACKIR_SOAR_URL", "https://<YOUR_ALISTOIR_SERVER_IP_OR_DOMAIN>/alerts/ingest.php").strip()
 SOAR_API_KEY = os.getenv("TRACKIR_SOAR_API_KEY", "GLOBAL_API_KEY").strip()
-SOAR_TENANT_KEY = os.getenv("TRACKIR_TENANT_KEY", "ali_TENANT_KEY").strip()
+SOAR_TENANT_KEY = os.getenv("TRACKIR_TENANT_KEY", "YOUR_ali_TENANT_KEY").strip()
 WAZUH_SOURCE_ID = os.getenv("TRACKIR_WAZUH_SOURCE", "").strip()
 WAZUH_ALERTS_FILE = os.getenv("TRACKIR_WAZUH_ALERTS_FILE", "/var/ossec/logs/alerts/alerts.json")
 STATE_DB = os.getenv("TRACKIR_STATE_DB", "/var/ossec/integrations/soar_forwarder_state.db")
