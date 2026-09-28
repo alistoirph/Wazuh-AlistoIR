@@ -1,0 +1,197 @@
+<group name="windows,sysmon,avoslocker,ransomware,">
+
+  <!-- ====================================================== -->
+  <!-- AvosLocker: Ransom note created                        -->
+  <!-- Sysmon Event ID 11 - FileCreate                        -->
+  <!-- ====================================================== -->
+
+  <rule id="100300" level="14">
+    <if_sid>61613</if_sid>
+    <field name="win.eventdata.targetFilename" type="pcre2">(?i)\\GET_YOUR_FILES_BACK\.txt$</field>
+    <description>AvosLocker ransomware artifact detected - ransom note created.</description>
+    <mitre>
+      <id>T1486</id>
+    </mitre>
+    <group>avoslocker,ransomware,file_creation,</group>
+  </rule>
+
+
+  <!-- ====================================================== -->
+  <!-- AvosLocker encrypted file extension                    -->
+  <!-- .avos / .avos2                                         -->
+  <!-- ====================================================== -->
+
+  <rule id="100301" level="14">
+    <if_sid>61613</if_sid>
+    <field name="win.eventdata.targetFilename" type="pcre2">(?i)\.avos2?$</field>
+    <description>Possible AvosLocker ransomware encrypted file created.</description>
+    <mitre>
+      <id>T1486</id>
+    </mitre>
+    <group>avoslocker,ransomware,encryption,</group>
+  </rule>
+
+
+  <!-- ====================================================== -->
+  <!-- AvosLocker Linux extension                             -->
+  <!-- Useful if corresponding file events reach Wazuh        -->
+  <!-- ====================================================== -->
+
+  <rule id="100302" level="14">
+    <if_sid>61613</if_sid>
+    <field name="win.eventdata.targetFilename" type="pcre2">(?i)\.avoslinux$</field>
+    <description>AvosLocker ransomware Linux encryption extension detected.</description>
+    <mitre>
+      <id>T1486</id>
+    </mitre>
+    <group>avoslocker,ransomware,encryption,</group>
+  </rule>
+
+
+  <!-- ====================================================== -->
+  <!-- AvosLocker Safe Mode preparation                       -->
+  <!-- ====================================================== -->
+
+  <rule id="100303" level="12">
+    <if_sid>61603</if_sid>
+    <field name="win.eventdata.image" type="pcre2">(?i)\\bcdedit\.exe$</field>
+    <field name="win.eventdata.commandLine" type="pcre2">(?i)\bsafeboot\b</field>
+    <description>Suspicious BCDEdit Safe Mode configuration detected - behavior associated with AvosLocker ransomware.</description>
+    <mitre>
+      <id>T1688</id>
+    </mitre>
+    <group>avoslocker,ransomware,safe_mode,defense_evasion,</group>
+  </rule>
+
+
+  <!-- ====================================================== -->
+  <!-- RunOnce persistence associated with Safe Mode          -->
+  <!-- Sysmon Event 13 - Registry value set                    -->
+  <!-- ====================================================== -->
+
+  <rule id="100304" level="11">
+    <if_sid>61615</if_sid>
+    <field name="win.eventdata.targetObject" type="pcre2">(?i)\\CurrentVersion\\RunOnce\\</field>
+    <description>RunOnce registry modification detected - review for AvosLocker Safe Mode execution.</description>
+    <mitre>
+      <id>T1547.001</id>
+    </mitre>
+    <group>avoslocker,ransomware,persistence,registry,</group>
+  </rule>
+
+
+  <!-- ====================================================== -->
+  <!-- Suspicious shadow copy deletion                        -->
+  <!-- Generic ransomware precursor                           -->
+  <!-- ====================================================== -->
+
+  <rule id="100305" level="12">
+    <if_sid>61603</if_sid>
+    <field name="win.eventdata.image" type="pcre2">(?i)\\vssadmin\.exe$</field>
+    <field name="win.eventdata.commandLine" type="pcre2">(?i)\bdelete\s+shadows\b</field>
+    <description>Shadow copies deletion detected - possible ransomware recovery inhibition.</description>
+    <mitre>
+      <id>T1490</id>
+    </mitre>
+    <group>ransomware,impact,shadow_copy_deletion,</group>
+  </rule>
+
+
+  <!-- ====================================================== -->
+  <!-- WMIC shadow copy deletion                              -->
+  <!-- ====================================================== -->
+
+  <rule id="100306" level="12">
+    <if_sid>61603</if_sid>
+    <field name="win.eventdata.image" type="pcre2">(?i)\\wmic\.exe$</field>
+    <field name="win.eventdata.commandLine" type="pcre2">(?i)shadowcopy.*delete</field>
+    <description>WMIC shadow copy deletion detected - possible ransomware activity.</description>
+    <mitre>
+      <id>T1490</id>
+    </mitre>
+    <group>ransomware,impact,shadow_copy_deletion,</group>
+  </rule>
+
+
+  <!-- ====================================================== -->
+  <!-- Encoded PowerShell                                     -->
+  <!-- AvosLocker affiliates documented using encoded PS      -->
+  <!-- ====================================================== -->
+
+  <rule id="100307" level="10">
+    <if_sid>61603</if_sid>
+    <field name="win.eventdata.image" type="pcre2">(?i)\\powershell\.exe$</field>
+    <field name="win.eventdata.commandLine" type="pcre2">(?i)(-enc|-encodedcommand)\s+</field>
+    <description>Encoded PowerShell execution detected - technique observed in AvosLocker operations.</description>
+    <mitre>
+      <id>T1059.001</id>
+      <id>T1027.010</id>
+    </mitre>
+    <group>avoslocker,powershell,obfuscated_command,ransomware,</group>
+  </rule>
+
+
+  <!-- ====================================================== -->
+  <!-- PsExec execution                                       -->
+  <!-- ====================================================== -->
+
+  <rule id="100308" level="10">
+    <if_sid>61603</if_sid>
+    <field name="win.eventdata.image" type="pcre2">(?i)\\psexec(64)?\.exe$</field>
+    <description>PsExec execution detected - lateral movement tool observed in AvosLocker operations.</description>
+    <mitre>
+      <id>T1569.002</id>
+    </mitre>
+    <group>avoslocker,lateral_movement,psexec,ransomware,</group>
+  </rule>
+
+
+  <!-- ====================================================== -->
+  <!-- Rclone execution                                       -->
+  <!-- AvosLocker affiliates use Rclone for exfiltration      -->
+  <!-- ====================================================== -->
+
+  <rule id="100309" level="10">
+    <if_sid>61603</if_sid>
+    <field name="win.eventdata.image" type="pcre2">(?i)\\rclone\.exe$</field>
+    <description>Rclone execution detected - exfiltration tool observed in AvosLocker operations.</description>
+    <mitre>
+      <id>T1567.002</id>
+    </mitre>
+    <group>avoslocker,exfiltration,rclone,ransomware,</group>
+  </rule>
+
+</group>
+
+<-- Wazuh FIM -->
+  <-- Add this to Agent Group -->
+<-- 
+  <syscheck>
+  <directories realtime="yes" check_all="yes">C:\Users</directories>
+  <directories realtime="yes" check_all="yes">C:\Shares</directories>
+  </syscheck>
+-->
+  
+<group name="syscheck,avoslocker,ransomware,">
+
+  <rule id="100310" level="14">
+    <if_group>syscheck</if_group>
+    <field name="file" type="pcre2">(?i)GET_YOUR_FILES_BACK\.txt$</field>
+    <description>AvosLocker ransomware ransom note detected by Wazuh FIM.</description>
+    <mitre>
+      <id>T1486</id>
+    </mitre>
+    <group>avoslocker,ransomware,ransom_note,</group>
+  </rule>
+
+  <rule id="100311" level="14">
+    <if_group>syscheck</if_group>
+    <field name="file" type="pcre2">(?i)\.(avos|avos2|avoslinux)$</field>
+    <description>AvosLocker ransomware encrypted file extension detected by Wazuh FIM.</description>
+    <mitre>
+      <id>T1486</id>
+    </mitre>
+    <group>avoslocker,ransomware,encryption,</group>
+  </rule>
+
+</group>
